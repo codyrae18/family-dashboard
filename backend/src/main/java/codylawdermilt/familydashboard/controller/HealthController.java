@@ -1,4 +1,4 @@
-package controller;
+package codylawdermilt.familydashboard.controller;
 
 import java.util.Map;
 
