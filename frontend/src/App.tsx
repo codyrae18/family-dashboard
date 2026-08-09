@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { getHealth, type HealthResponse } from "./api/healthApi";
+import { CreateUserForm } from "./components/users/createUserForm";
+import { UserList } from "./components/users/userList";
 
 function App() {
   const [health, setHealth] = useState<HealthResponse | null>(null);
@@ -22,8 +24,8 @@ function App() {
   return (
     <main>
       <h1>Family Finance Dashboard</h1>
-      <p>Backend status: {health.status}</p>
-      <p>API version: {health.version}</p>
+      <CreateUserForm />
+      <UserList />
     </main>
   );
 }
