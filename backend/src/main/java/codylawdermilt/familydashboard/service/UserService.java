@@ -2,6 +2,10 @@ package codylawdermilt.familydashboard.service;
 import codylawdermilt.familydashboard.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import codylawdermilt.familydashboard.dto.CreateUserRequest;
+import codylawdermilt.familydashboard.dto.UserResponse;
+import codylawdermilt.familydashboard.entity.User;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -14,17 +18,40 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
-    }
+    public List<UserResponse> getAllUsers() {
+    return userRepository.findAll()
+            .stream()
+            .map(user -> new UserResponse(
+                    user.getId(),
+                    user.getFirstName(),
+                    user.getLastName(),
+                    user.getEmail()
+            ))
+            .toList();
+}
 
     public Optional<User> getUserById(Long id) {
         return userRepository.findById(id);
     }
 
-    public User createUser(User user) {
-        return userRepository.save(user);
-    }
+   public UserResponse createUser(CreateUserRequest request) {
+
+    User user = new User(
+    request.getFirstName(),
+    request.getLastName(),
+    request.getEmail(),
+    "TEMP_PASSWORD"
+    );
+
+    User savedUser = userRepository.save(user);
+
+    return new UserResponse(
+            savedUser.getId(),
+            savedUser.getFirstName(),
+            savedUser.getLastName(),
+            savedUser.getEmail()
+    );
+}
 
     public User updateUser(Long id, User updatedUser) {
         return userRepository.findById(id)
