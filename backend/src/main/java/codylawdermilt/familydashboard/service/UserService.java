@@ -18,7 +18,7 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public List<UserResponse> getAllUsers() {
+    public List<UserResponse> getAllUsers() {   
     return userRepository.findAll()
             .stream()
             .map(user -> new UserResponse(
@@ -35,6 +35,10 @@ public class UserService {
     }
 
    public UserResponse createUser(CreateUserRequest request) {
+
+    if (userRepository.existsByEmail(request.getEmail())) {
+        throw new IllegalArgumentException("Email address already exists.");
+    }
 
     User user = new User(
     request.getFirstName(),
