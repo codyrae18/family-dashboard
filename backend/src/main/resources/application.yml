@@ -25,4 +25,8 @@ logging:
     org.flywaydb: info
     org.hibernate.SQL: debug
 
+jwt:
+  secret: ${JWT_SECRET}
+  issuer: family-dashboard
+  expiration-minutes: 30
     

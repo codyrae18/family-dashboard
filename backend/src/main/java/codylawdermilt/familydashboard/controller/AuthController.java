@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import codylawdermilt.familydashboard.dto.LoginRequest;
+import codylawdermilt.familydashboard.dto.LoginResponse;
 import codylawdermilt.familydashboard.dto.RegisterRequest;
 import codylawdermilt.familydashboard.dto.UserResponse;
 import codylawdermilt.familydashboard.service.AuthService;
@@ -38,10 +39,9 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserResponse> login(
+    public ResponseEntity<LoginResponse> login(
             @Valid @RequestBody LoginRequest request) {
-        UserResponse authenticatedUser = authService.login(request);
-
-        return ResponseEntity.ok(authenticatedUser);
+        return ResponseEntity.ok(
+                authService.login(request));
     }
 }

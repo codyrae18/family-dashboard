@@ -2,6 +2,7 @@ package codylawdermilt.familydashboard.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -12,31 +13,41 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http
+    ) throws Exception {
         return http
-                // Temporary for this stage. We will revisit this when using JWT cookies.
-                .csrf(csrf -> csrf.disable())
+            .csrf(csrf -> csrf.disable())
 
-                // JWT authentication will not use server-side sessions.
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(
+                    SessionCreationPolicy.STATELESS
+                )
+            )
 
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/health").permitAll()
-                        .requestMatchers(
-                                "/api/auth/register",
-                                "/api/auth/login")
-                        .permitAll()
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(
+                    "/api/health",
+                    "/api/auth/register",
+                    "/api/auth/login"
+                ).permitAll()
 
-                        // Temporary until the authentication flow is finished.
-                        .requestMatchers("/api/users/**").permitAll()
+                // Temporary while the React authentication flow
+                // is not connected.
+                .requestMatchers("/api/users/**").permitAll()
 
-                        .anyRequest().authenticated())
-                .build();
+                .anyRequest().authenticated()
+            )
+
+            .oauth2ResourceServer(oauth2 -> oauth2
+                .jwt(Customizer.withDefaults())
+            )
+
+            .build();
     }
 
     @Bean
-    PasswordEncoder passwordEncoder() {
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 }
