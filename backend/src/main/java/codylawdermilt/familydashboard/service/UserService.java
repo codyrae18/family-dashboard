@@ -1,5 +1,8 @@
 package codylawdermilt.familydashboard.service;
+
 import codylawdermilt.familydashboard.repository.UserRepository;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import codylawdermilt.familydashboard.dto.CreateUserRequest;
@@ -13,49 +16,53 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    public List<UserResponse> getAllUsers() {   
-    return userRepository.findAll()
-            .stream()
-            .map(user -> new UserResponse(
-                    user.getId(),
-                    user.getFirstName(),
-                    user.getLastName(),
-                    user.getEmail()
-            ))
-            .toList();
-}
+    public List<UserResponse> getAllUsers() {
+        return userRepository.findAll()
+                .stream()
+                .map(user -> new UserResponse(
+                        user.getId(),
+                        user.getFirstName(),
+                        user.getLastName(),
+                        user.getEmail()))
+                .toList();
+    }
 
     public Optional<User> getUserById(Long id) {
         return userRepository.findById(id);
     }
 
-   public UserResponse createUser(CreateUserRequest request) {
+    public UserResponse createUser(CreateUserRequest request) {
 
-    if (userRepository.existsByEmail(request.getEmail())) {
-        throw new IllegalArgumentException("Email address already exists.");
+        String normalizedEmail = request.getEmail().trim().toLowerCase();
+
+        if (userRepository.existsByEmail(normalizedEmail)) {
+            throw new IllegalArgumentException(
+                    "Email address already exists.");
+        }
+
+        String passwordHash = passwordEncoder.encode(request.getPassword());
+
+        User user = new User(
+                request.getFirstName().trim(),
+                request.getLastName().trim(),
+                normalizedEmail,
+                passwordHash);
+
+        User savedUser = userRepository.save(user);
+
+        return new UserResponse(
+                savedUser.getId(),
+                savedUser.getFirstName(),
+                savedUser.getLastName(),
+                savedUser.getEmail());
     }
-
-    User user = new User(
-    request.getFirstName(),
-    request.getLastName(),
-    request.getEmail(),
-    "TEMP_PASSWORD"
-    );
-
-    User savedUser = userRepository.save(user);
-
-    return new UserResponse(
-            savedUser.getId(),
-            savedUser.getFirstName(),
-            savedUser.getLastName(),
-            savedUser.getEmail()
-    );
-}
 
     public User updateUser(Long id, User updatedUser) {
         return userRepository.findById(id)

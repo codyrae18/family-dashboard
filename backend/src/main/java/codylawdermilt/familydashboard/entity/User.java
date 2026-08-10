@@ -47,8 +47,7 @@ public class User {
             String firstName,
             String lastName,
             String email,
-            String passwordHash
-    ) {
+            String passwordHash) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
