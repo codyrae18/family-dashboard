@@ -7,9 +7,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 import codylawdermilt.familydashboard.entity.User;
 
@@ -17,14 +19,17 @@ import codylawdermilt.familydashboard.entity.User;
 public class JwtService {
 
     private final JwtEncoder jwtEncoder;
+    private final JwtDecoder jwtDecoder;
     private final String issuer;
     private final Duration expiration;
 
     public JwtService(
             JwtEncoder jwtEncoder,
+            JwtDecoder jwtDecoder,
             @Value("${jwt.issuer}") String issuer,
             @Value("${jwt.expiration-minutes}") long expirationMinutes) {
         this.jwtEncoder = jwtEncoder;
+        this.jwtDecoder = jwtDecoder;
         this.issuer = issuer;
         this.expiration = Duration.ofMinutes(expirationMinutes);
     }
@@ -49,6 +54,20 @@ public class JwtService {
         return jwtEncoder
                 .encode(JwtEncoderParameters.from(header, claims))
                 .getTokenValue();
+    }
+
+    public boolean isTokenValid(String token) {
+        try {
+            jwtDecoder.decode(token);
+            return true;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+
+    public String getEmailFromToken(String token) {
+        Jwt jwt = jwtDecoder.decode(token);
+        return jwt.getSubject();
     }
 
     public long getExpirationSeconds() {
