@@ -2,6 +2,10 @@ package codylawdermilt.familydashboard.controller;
 
 import java.net.URI;
 
+import java.time.Duration;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,6 +17,7 @@ import codylawdermilt.familydashboard.dto.LoginResponse;
 import codylawdermilt.familydashboard.dto.RegisterRequest;
 import codylawdermilt.familydashboard.dto.UserResponse;
 import codylawdermilt.familydashboard.service.AuthService;
+import codylawdermilt.familydashboard.service.JwtService;
 import jakarta.validation.Valid;
 
 @RestController
@@ -20,9 +25,11 @@ import jakarta.validation.Valid;
 public class AuthController {
 
     private final AuthService authService;
+    private final JwtService jwtService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, JwtService jwtService) {
         this.authService = authService;
+        this.jwtService = jwtService;
     }
 
     @PostMapping("/register")
@@ -40,8 +47,21 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(
-            @Valid @RequestBody LoginRequest request) {
-        return ResponseEntity.ok(
-                authService.login(request));
+            @RequestBody LoginRequest request) {
+
+        LoginResponse response = authService.login(request);
+
+        ResponseCookie cookie = ResponseCookie
+                .from("access_token", response.getToken())
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(Duration.ofSeconds(jwtService.getExpirationSeconds()))
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(response);
     }
 }

@@ -18,82 +18,83 @@ import codylawdermilt.familydashboard.repository.UserRepository;
 @Service
 public class AuthService {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    JwtService jwtService;
+        private final UserRepository userRepository;
+        private final PasswordEncoder passwordEncoder;
+        JwtService jwtService;
 
-    public AuthService(
-            UserRepository userRepository,
-            PasswordEncoder passwordEncoder,
-            JwtService jwtService) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtService = jwtService;
-    }
-
-    @Transactional
-    public UserResponse register(RegisterRequest request) {
-        String normalizedEmail = normalizeEmail(
-                request.getEmail());
-
-        if (userRepository.existsByEmailIgnoreCase(normalizedEmail)) {
-            throw new DuplicateEmailException(
-                    "Email address already exists.");
+        public AuthService(
+                        UserRepository userRepository,
+                        PasswordEncoder passwordEncoder,
+                        JwtService jwtService) {
+                this.userRepository = userRepository;
+                this.passwordEncoder = passwordEncoder;
+                this.jwtService = jwtService;
         }
 
-        String passwordHash = passwordEncoder.encode(
-                request.getPassword());
+        @Transactional
+        public UserResponse register(RegisterRequest request) {
+                String normalizedEmail = normalizeEmail(
+                                request.getEmail());
 
-        User user = new User(
-                request.getFirstName().trim(),
-                request.getLastName().trim(),
-                normalizedEmail,
-                passwordHash);
+                if (userRepository.existsByEmailIgnoreCase(normalizedEmail)) {
+                        throw new DuplicateEmailException(
+                                        "Email address already exists.");
+                }
 
-        User savedUser = userRepository.save(user);
+                String passwordHash = passwordEncoder.encode(
+                                request.getPassword());
 
-        return convertToResponse(savedUser);
-    }
+                User user = new User(
+                                request.getFirstName().trim(),
+                                request.getLastName().trim(),
+                                normalizedEmail,
+                                passwordHash);
 
-    @Transactional(readOnly = true)
-    public LoginResponse login(LoginRequest request) {
-        String normalizedEmail = normalizeEmail(
-                request.getEmail());
+                User savedUser = userRepository.save(user);
 
-        User user = userRepository
-                .findByEmailIgnoreCase(normalizedEmail)
-                .orElseThrow(() -> new InvalidCredentialsException(
-                        "Invalid email or password."));
-
-        if (user.getPasswordHash() == null
-                || !passwordEncoder.matches(
-                        request.getPassword(),
-                        user.getPasswordHash())) {
-            throw new InvalidCredentialsException(
-                    "Invalid email or password.");
+                return convertToResponse(savedUser);
         }
 
-        String accessToken = jwtService.generateToken(user);
+        @Transactional(readOnly = true)
+        public LoginResponse login(LoginRequest request) {
 
-        UserResponse userResponse = convertToResponse(user);
+                String normalizedEmail = normalizeEmail(request.getEmail());
 
-        return new LoginResponse(
-                accessToken,
-                jwtService.getExpirationSeconds(),
-                userResponse);
-    }
+                User user = userRepository
+                                .findByEmailIgnoreCase(normalizedEmail)
+                                .orElseThrow(() -> new InvalidCredentialsException(
+                                                "Invalid email or password."));
 
-    private String normalizeEmail(String email) {
-        return email
-                .trim()
-                .toLowerCase(Locale.ROOT);
-    }
+                if (user.getPasswordHash() == null
+                                || !passwordEncoder.matches(
+                                                request.getPassword(),
+                                                user.getPasswordHash())) {
 
-    private UserResponse convertToResponse(User user) {
-        return new UserResponse(
-                user.getId(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getEmail());
-    }
+                        throw new InvalidCredentialsException(
+                                        "Invalid email or password.");
+                }
+
+                String accessToken = jwtService.generateToken(user);
+
+                UserResponse userResponse = convertToResponse(user);
+
+                return new LoginResponse(
+                                accessToken,
+                                jwtService.getExpirationSeconds(),
+                                userResponse);
+        }
+
+        private String normalizeEmail(String email) {
+                return email
+                                .trim()
+                                .toLowerCase(Locale.ROOT);
+        }
+
+        private UserResponse convertToResponse(User user) {
+                return new UserResponse(
+                                user.getId(),
+                                user.getFirstName(),
+                                user.getLastName(),
+                                user.getEmail());
+        }
 }

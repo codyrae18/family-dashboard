@@ -1,29 +1,27 @@
 package codylawdermilt.familydashboard.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class LoginResponse {
 
-    private final String accessToken;
-    private final String tokenType;
-    private final long expiresIn;
-    private final UserResponse user;
+    @JsonIgnore
+    private String token;
+
+    private long expiresIn;
+
+    private UserResponse user;
 
     public LoginResponse(
-            String accessToken,
+            String token,
             long expiresIn,
-            UserResponse user
-    ) {
-        this.accessToken = accessToken;
-        this.tokenType = "Bearer";
+            UserResponse user) {
+        this.token = token;
         this.expiresIn = expiresIn;
         this.user = user;
     }
 
-    public String getAccessToken() {
-        return accessToken;
-    }
-
-    public String getTokenType() {
-        return tokenType;
+    public String getToken() {
+        return token;
     }
 
     public long getExpiresIn() {
