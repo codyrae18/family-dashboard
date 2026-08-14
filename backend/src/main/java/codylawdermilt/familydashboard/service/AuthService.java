@@ -97,4 +97,17 @@ public class AuthService {
                                 user.getLastName(),
                                 user.getEmail());
         }
+
+        @Transactional(readOnly = true)
+        public UserResponse getCurrentUser(String token) {
+
+                String email = jwtService.getEmailFromToken(token);
+
+                User user = userRepository
+                                .findByEmailIgnoreCase(email)
+                                .orElseThrow(() -> new InvalidCredentialsException(
+                                                "Authenticated user not found."));
+
+                return convertToResponse(user);
+        }
 }
