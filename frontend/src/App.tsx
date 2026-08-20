@@ -1,8 +1,7 @@
-import { login } from "./components/login/login";
-
+import { Login } from "./components/login/login";
 function App() {
   return (
-    <main>
+    <main className="bg-amber-200 w-screen h-screen">
       <Login />
     </main>
   );

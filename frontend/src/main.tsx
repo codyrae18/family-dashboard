@@ -7,12 +7,11 @@ import App from "./App";
 import { queryClient } from "./lib/queryClient";
 import "./index.css";
 
-
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <App />
-      <ReactQueryDevtools initialIsOpen={false} />
+      <ReactQueryDevtools initialIsOpen={false  } />
     </QueryClientProvider>
   </StrictMode>,
 );
